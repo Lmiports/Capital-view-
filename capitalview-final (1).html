@@ -1,0 +1,2055 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CapitalView - Gestão Financeira Pessoal</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        :root {
+            --bg-primary: #0A0E27;
+            --bg-secondary: #151B3D;
+            --bg-card: #1A2238;
+            --accent: #00F5A0;
+            --accent-secondary: #00D9F5;
+            --text-primary: #FFFFFF;
+            --text-secondary: #8B93B0;
+            --border: rgba(255, 255, 255, 0.06);
+            --error: #FF6B6B;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .app {
+            max-width: 430px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--bg-primary);
+        }
+
+        .header {
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--bg-primary);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 18px;
+            transition: all 0.3s ease;
+        }
+
+        .header-btn:active {
+            transform: scale(0.95);
+        }
+
+        .content {
+            padding: 0 24px 100px;
+        }
+
+        .greeting {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .greeting-sub {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 32px;
+        }
+
+        .balance-card {
+            background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary) 100%);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 24px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .balance-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+        }
+
+        .balance-label {
+            font-size: 13px;
+            font-weight: 500;
+            color: rgba(0, 0, 0, 0.6);
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .balance-value {
+            font-size: 40px;
+            font-weight: 800;
+            color: #000;
+            letter-spacing: -1.5px;
+            margin-bottom: 16px;
+        }
+
+        .balance-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cvi-mini {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(0, 0, 0, 0.1);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #000;
+        }
+
+        .cvi-dot {
+            width: 8px;
+            height: 8px;
+            background: #000;
+            border-radius: 50%;
+        }
+
+        .quick-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+
+        .stat-box {
+            background: var(--bg-card);
+            border-radius: 16px;
+            padding: 20px 16px;
+            border: 1px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .stat-change {
+            font-size: 12px;
+            color: var(--accent);
+            margin-top: 4px;
+            font-weight: 600;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            letter-spacing: -0.3px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .section-action {
+            font-size: 13px;
+            color: var(--accent);
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .category-item, .investment-item, .transaction-item {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            padding: 16px 0;
+            border-bottom: 1px solid var(--border);
+            position: relative;
+        }
+
+        .category-item:last-child, .investment-item:last-child, .transaction-item:last-child {
+            border: none;
+            padding-bottom: 0;
+        }
+
+        .category-item:first-child, .investment-item:first-child, .transaction-item:first-child {
+            padding-top: 0;
+        }
+
+        .item-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .item-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .item-name {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .item-detail {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .item-bar {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 6px;
+        }
+
+        .item-bar-fill {
+            height: 100%;
+            border-radius: 2px;
+            transition: width 1s ease;
+        }
+
+        .item-value {
+            font-size: 16px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .item-change {
+            font-size: 12px;
+            margin-top: 2px;
+        }
+
+        .item-actions {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            display: flex;
+            gap: 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .category-item:hover .item-actions,
+        .transaction-item:hover .item-actions {
+            opacity: 1;
+        }
+
+        .action-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: var(--bg-secondary);
+            border: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .action-btn:active {
+            transform: scale(0.95);
+        }
+
+        .goal-card {
+            background: var(--bg-secondary);
+            border-radius: 20px;
+            overflow: hidden;
+            margin-bottom: 16px;
+            border: 1px solid var(--border);
+        }
+
+        .goal-image {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: var(--bg-card);
+            cursor: pointer;
+        }
+
+        .goal-content {
+            padding: 20px;
+        }
+
+        .goal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 16px;
+        }
+
+        .goal-name {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .goal-target {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .goal-percentage {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--accent);
+        }
+
+        .goal-progress {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 12px;
+        }
+
+        .goal-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent), var(--accent-secondary));
+            border-radius: 3px;
+            transition: width 1s ease;
+        }
+
+        .goal-amount {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .goal-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .goal-btn {
+            flex: 1;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-card);
+            color: var(--text-primary);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .goal-btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--accent);
+            border: none;
+            border-radius: 16px;
+            color: #000;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 16px;
+            letter-spacing: -0.3px;
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: var(--bg-card);
+            color: var(--text-primary);
+        }
+
+        .btn-danger {
+            background: var(--error);
+            color: white;
+        }
+
+        .nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--bg-secondary);
+            border-top: 1px solid var(--border);
+            padding: 8px 12px 8px;
+            display: flex;
+            justify-content: space-around;
+            max-width: 430px;
+            margin: 0 auto;
+            z-index: 100;
+        }
+
+        .nav-item {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 8px;
+            background: none;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 12px;
+        }
+
+        .nav-item.active {
+            color: var(--accent);
+            background: rgba(0, 245, 160, 0.05);
+        }
+
+        .nav-icon {
+            font-size: 22px;
+            transition: transform 0.3s ease;
+        }
+
+        .nav-item.active .nav-icon {
+            transform: translateY(-2px);
+        }
+
+        .nav-label {
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.85);
+            display: flex;
+            align-items: flex-end;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .modal {
+            background: var(--bg-secondary);
+            width: 100%;
+            max-width: 430px;
+            margin: 0 auto;
+            border-radius: 28px 28px 0 0;
+            padding: 28px 24px;
+            animation: slideUp 0.3s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .close-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--bg-card);
+            border: none;
+            color: var(--text-secondary);
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            letter-spacing: 0.3px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            color: var(--text-primary);
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: var(--accent);
+        }
+
+        .image-upload {
+            width: 100%;
+            height: 180px;
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: var(--bg-card);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .image-upload:hover {
+            border-color: var(--accent);
+        }
+
+        .image-upload.has-image {
+            border: none;
+            padding: 0;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            opacity: 0.3;
+            margin-bottom: 12px;
+        }
+
+        .upload-text {
+            font-size: 13px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .preview-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.7);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .profile-header {
+            text-align: center;
+            padding: 32px 0;
+        }
+
+        .profile-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), var(--accent-secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 auto 16px;
+            position: relative;
+            cursor: pointer;
+            overflow: hidden;
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .avatar-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--accent);
+            border: 3px solid var(--bg-primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 14px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.5px;
+        }
+
+        .profile-email {
+            font-size: 14px;
+            color: var(--text-secondary);
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 18px;
+            background: var(--bg-card);
+            border-radius: 16px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+        }
+
+        .menu-item:active {
+            transform: scale(0.98);
+        }
+
+        .menu-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .menu-icon {
+            font-size: 20px;
+        }
+
+        .menu-text {
+            font-size: 15px;
+            font-weight: 600;
+        }
+
+        .menu-arrow {
+            color: var(--text-secondary);
+            font-size: 18px;
+        }
+
+        .chart-container {
+            height: 200px;
+            margin: 20px 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .empty-icon {
+            font-size: 64px;
+            opacity: 0.3;
+            margin-bottom: 16px;
+        }
+
+        .empty-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .empty-subtext {
+            font-size: 14px;
+            color: var(--text-secondary);
+            opacity: 0.7;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            border-radius: 16px;
+            font-size: 14px;
+            font-weight: 600;
+            z-index: 2000;
+            animation: slideUp 0.3s ease;
+            max-width: 90%;
+        }
+
+        .toast.success {
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .toast.error {
+            border-color: var(--error);
+            color: var(--error);
+        }
+
+        @media (min-width: 768px) {
+            .app {
+                max-width: 1200px;
+                padding: 0 40px;
+            }
+
+            .content {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 24px;
+                align-items: start;
+            }
+
+            .balance-card,
+            .quick-stats {
+                grid-column: 1 / -1;
+            }
+
+            .nav {
+                max-width: 1200px;
+            }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            animation: slideIn 0.5s ease;
+        }
+
+        .confirm-dialog {
+            background: var(--bg-card);
+            border-radius: 20px;
+            padding: 24px;
+            max-width: 400px;
+            margin: auto;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .confirm-title {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 12px;
+        }
+
+        .confirm-text {
+            font-size: 14px;
+            color: var(--text-secondary);
+            margin-bottom: 24px;
+        }
+
+        .confirm-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .confirm-btn {
+            flex: 1;
+            padding: 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Sistema de dados com localStorage
+        const STORAGE_KEY = 'capitalview_data_v1';
+
+        const defaultData = {
+            user: {
+                name: 'Usuário',
+                email: 'usuario@email.com',
+                avatar: null
+            },
+            categories: [
+                { id: 1, name: 'Moradia', icon: '🏠', color: '#FF6B6B' },
+                { id: 2, name: 'Alimentação', icon: '🍽️', color: '#4ECDC4' },
+                { id: 3, name: 'Transporte', icon: '🚗', color: '#45B7D1' },
+                { id: 4, name: 'Lazer', icon: '🎮', color: '#A78BFA' },
+                { id: 5, name: 'Saúde', icon: '⚕️', color: '#F59E0B' },
+                { id: 6, name: 'Educação', icon: '📚', color: '#8B5CF6' }
+            ],
+            transactions: [],
+            investments: [],
+            goals: [],
+            incomes: []
+        };
+
+        const loadData = () => {
+            const saved = localStorage.getItem(STORAGE_KEY);
+            return saved ? JSON.parse(saved) : defaultData;
+        };
+
+        const saveData = (data) => {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        };
+
+        function App() {
+            const [screen, setScreen] = useState('home');
+            const [data, setData] = useState(loadData);
+            const [showModal, setShowModal] = useState(false);
+            const [modalType, setModalType] = useState('');
+            const [editItem, setEditItem] = useState(null);
+            const [toast, setToast] = useState(null);
+
+            useEffect(() => {
+                saveData(data);
+            }, [data]);
+
+            const showToast = (message, type = 'success') => {
+                setToast({ message, type });
+                setTimeout(() => setToast(null), 3000);
+            };
+
+            const formatCurrency = (value) => {
+                return new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL'
+                }).format(value);
+            };
+
+            const openModal = (type, item = null) => {
+                setModalType(type);
+                setEditItem(item);
+                setShowModal(true);
+            };
+
+            const closeModal = () => {
+                setShowModal(false);
+                setModalType('');
+                setEditItem(null);
+            };
+
+            const deleteTransaction = (id) => {
+                if (confirm('Deseja realmente excluir esta transação?')) {
+                    setData(prev => ({
+                        ...prev,
+                        transactions: prev.transactions.filter(t => t.id !== id)
+                    }));
+                    showToast('Transação excluída');
+                }
+            };
+
+            const deleteGoal = (id) => {
+                if (confirm('Deseja realmente excluir esta meta?')) {
+                    setData(prev => ({
+                        ...prev,
+                        goals: prev.goals.filter(g => g.id !== id)
+                    }));
+                    showToast('Meta excluída');
+                }
+            };
+
+            const screens = {
+                home: <HomeScreen data={data} formatCurrency={formatCurrency} openModal={openModal} />,
+                expenses: <ExpensesScreen data={data} formatCurrency={formatCurrency} openModal={openModal} deleteTransaction={deleteTransaction} />,
+                investments: <InvestmentsScreen data={data} setData={setData} formatCurrency={formatCurrency} openModal={openModal} showToast={showToast} />,
+                goals: <GoalsScreen data={data} setData={setData} formatCurrency={formatCurrency} openModal={openModal} deleteGoal={deleteGoal} showToast={showToast} />,
+                profile: <ProfileScreen data={data} setData={setData} showToast={showToast} />
+            };
+
+            return (
+                <div className="app">
+                    <Header openModal={openModal} />
+                    <div className="content">
+                        {screens[screen]}
+                    </div>
+                    <Nav screen={screen} setScreen={setScreen} />
+                    {showModal && (
+                        <Modal 
+                            type={modalType} 
+                            closeModal={closeModal} 
+                            data={data} 
+                            setData={setData}
+                            editItem={editItem}
+                            formatCurrency={formatCurrency}
+                            showToast={showToast}
+                        />
+                    )}
+                    {toast && (
+                        <div className={`toast ${toast.type}`}>
+                            {toast.message}
+                        </div>
+                    )}
+                </div>
+            );
+        }
+
+        function Header({ openModal }) {
+            return (
+                <div className="header">
+                    <div className="logo">CapitalView</div>
+                    <button className="header-btn" onClick={() => openModal('settings')}>
+                        ⚙️
+                    </button>
+                </div>
+            );
+        }
+
+        function Nav({ screen, setScreen }) {
+            const items = [
+                { id: 'home', label: 'Início', icon: '🏠' },
+                { id: 'expenses', label: 'Gastos', icon: '💳' },
+                { id: 'investments', label: 'Investir', icon: '📈' },
+                { id: 'goals', label: 'Metas', icon: '🎯' },
+                { id: 'profile', label: 'Perfil', icon: '👤' }
+            ];
+
+            return (
+                <div className="nav">
+                    {items.map(item => (
+                        <button
+                            key={item.id}
+                            className={`nav-item ${screen === item.id ? 'active' : ''}`}
+                            onClick={() => setScreen(item.id)}
+                        >
+                            <div className="nav-icon">{item.icon}</div>
+                            <div className="nav-label">{item.label}</div>
+                        </button>
+                    ))}
+                </div>
+            );
+        }
+
+        function HomeScreen({ data, formatCurrency, openModal }) {
+            const totalExpenses = data.transactions
+                .filter(t => t.type === 'expense')
+                .reduce((sum, t) => sum + t.amount, 0);
+
+            const totalIncome = data.incomes.reduce((sum, i) => sum + i.amount, 0);
+            const totalInvestments = data.investments.reduce((sum, i) => sum + i.amount, 0);
+            const totalGoals = data.goals.reduce((sum, g) => sum + g.current, 0);
+            const patrimony = totalInvestments + totalGoals;
+            const available = totalIncome - totalExpenses;
+
+            const cvi = Math.min(100, Math.max(0, Math.round(
+                (available > 0 ? 40 : 0) + 
+                (patrimony > 10000 ? 30 : (patrimony / 10000) * 30) +
+                (data.goals.length > 0 ? 30 : 0)
+            )));
+
+            useEffect(() => {
+                const ctx = document.getElementById('flowChart');
+                if (ctx && window.Chart) {
+                    const existing = Chart.getChart(ctx);
+                    if (existing) existing.destroy();
+                    
+                    const last6Months = [];
+                    const today = new Date();
+                    for (let i = 5; i >= 0; i--) {
+                        const date = new Date(today.getFullYear(), today.getMonth() - i, 1);
+                        last6Months.push(date.toLocaleDateString('pt-BR', { month: 'short' }));
+                    }
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: last6Months,
+                            datasets: [{
+                                data: [8500, 12000, 9800, 15200, 11500, available],
+                                borderColor: '#00F5A0',
+                                backgroundColor: 'rgba(0, 245, 160, 0.1)',
+                                tension: 0.4,
+                                fill: true,
+                                pointRadius: 0,
+                                borderWidth: 2
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: { legend: { display: false } },
+                            scales: {
+                                y: {
+                                    display: false,
+                                    beginAtZero: true
+                                },
+                                x: {
+                                    grid: { display: false },
+                                    ticks: { color: '#8B93B0', font: { size: 11 } }
+                                }
+                            }
+                        }
+                    });
+                }
+            }, [data, available]);
+
+            const recentTransactions = [...data.transactions]
+                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                .slice(0, 5);
+
+            return (
+                <>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                        <div className="greeting">Olá, {data.user.name}</div>
+                        <div className="greeting-sub">Veja seu resumo financeiro</div>
+
+                        <div className="balance-card">
+                            <div className="balance-label">Patrimônio Total</div>
+                            <div className="balance-value">{formatCurrency(patrimony)}</div>
+                            <div className="balance-footer">
+                                <div className="cvi-mini">
+                                    <div className="cvi-dot"></div>
+                                    CVI {cvi} • {cvi >= 70 ? 'Saudável' : cvi >= 40 ? 'Moderado' : 'Atenção'}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="quick-stats">
+                            <div className="stat-box">
+                                <div className="stat-label">Disponível</div>
+                                <div className="stat-value">{formatCurrency(available)}</div>
+                            </div>
+                            <div className="stat-box">
+                                <div className="stat-label">Entradas</div>
+                                <div className="stat-value">{formatCurrency(totalIncome)}</div>
+                            </div>
+                            <div className="stat-box">
+                                <div className="stat-label">Saídas</div>
+                                <div className="stat-value">{formatCurrency(totalExpenses)}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Fluxo de Caixa</div>
+                        <div className="chart-container">
+                            <canvas id="flowChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">
+                            Últimas Transações
+                            <div className="section-action" onClick={() => openModal('expense')}>+ Adicionar</div>
+                        </div>
+                        {recentTransactions.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">💳</div>
+                                <div className="empty-text">Nenhuma transação ainda</div>
+                                <div className="empty-subtext">Adicione sua primeira transação</div>
+                            </div>
+                        ) : (
+                            recentTransactions.map(t => {
+                                const category = data.categories.find(c => c.id === t.categoryId);
+                                return (
+                                    <div key={t.id} className="transaction-item">
+                                        <div className="item-icon" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
+                                            {category?.icon || '💳'}
+                                        </div>
+                                        <div className="item-info">
+                                            <div className="item-name">{t.description}</div>
+                                            <div className="item-detail">
+                                                {new Date(t.date).toLocaleDateString('pt-BR')}
+                                            </div>
+                                        </div>
+                                        <div className="item-value" style={{ color: t.type === 'expense' ? '#FF6B6B' : '#00F5A0' }}>
+                                            {t.type === 'expense' ? '-' : '+'}{formatCurrency(t.amount)}
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function ExpensesScreen({ data, formatCurrency, openModal, deleteTransaction }) {
+            const currentMonth = new Date().getMonth();
+            const currentYear = new Date().getFullYear();
+
+            const monthExpenses = data.transactions
+                .filter(t => {
+                    const date = new Date(t.date);
+                    return t.type === 'expense' && 
+                           date.getMonth() === currentMonth && 
+                           date.getFullYear() === currentYear;
+                });
+
+            const total = monthExpenses.reduce((sum, t) => sum + t.amount, 0);
+
+            const categoryTotals = data.categories.map(cat => {
+                const catTotal = monthExpenses
+                    .filter(t => t.categoryId === cat.id)
+                    .reduce((sum, t) => sum + t.amount, 0);
+                return { ...cat, total: catTotal };
+            }).filter(c => c.total > 0);
+
+            return (
+                <>
+                    <div className="card" style={{ gridColumn: '1 / -1' }}>
+                        <div className="section-title">Gastos do Mês</div>
+                        <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '16px', letterSpacing: '-1px' }}>
+                            {formatCurrency(total)}
+                        </div>
+                        <div style={{ fontSize: '13px', color: 'var(--text-secondary)' }}>
+                            {monthExpenses.length} transaç{monthExpenses.length !== 1 ? 'ões' : 'ão'} este mês
+                        </div>
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">Por Categoria</div>
+                        {categoryTotals.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📊</div>
+                                <div className="empty-text">Nenhum gasto registrado</div>
+                            </div>
+                        ) : (
+                            categoryTotals.map(cat => {
+                                const percent = (cat.total / total * 100).toFixed(0);
+                                return (
+                                    <div key={cat.id} className="category-item">
+                                        <div className="item-icon" style={{ background: `${cat.color}15`, color: cat.color }}>
+                                            {cat.icon}
+                                        </div>
+                                        <div className="item-info">
+                                            <div className="item-name">{cat.name}</div>
+                                            <div className="item-bar">
+                                                <div className="item-bar-fill" style={{ width: `${percent}%`, background: cat.color }}></div>
+                                            </div>
+                                        </div>
+                                        <div className="item-value">{formatCurrency(cat.total)}</div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">
+                            Todas as Transações
+                            <div className="section-action" onClick={() => openModal('expense')}>+ Adicionar</div>
+                        </div>
+                        {monthExpenses.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">💸</div>
+                                <div className="empty-text">Nenhuma transação</div>
+                                <div className="empty-subtext">Comece a registrar seus gastos</div>
+                            </div>
+                        ) : (
+                            [...monthExpenses]
+                                .sort((a, b) => new Date(b.date) - new Date(a.date))
+                                .map(t => {
+                                    const cat = data.categories.find(c => c.id === t.categoryId);
+                                    return (
+                                        <div key={t.id} className="transaction-item">
+                                            <div className="item-icon" style={{ background: 'rgba(255, 255, 255, 0.05)' }}>
+                                                {cat?.icon || '💳'}
+                                            </div>
+                                            <div className="item-info">
+                                                <div className="item-name">{t.description}</div>
+                                                <div className="item-detail">
+                                                    {new Date(t.date).toLocaleDateString('pt-BR')} • {cat?.name}
+                                                </div>
+                                            </div>
+                                            <div className="item-value" style={{ color: '#FF6B6B' }}>
+                                                -{formatCurrency(t.amount)}
+                                            </div>
+                                            <div className="item-actions">
+                                                <button className="action-btn" onClick={() => openModal('expense', t)}>✏️</button>
+                                                <button className="action-btn" onClick={() => deleteTransaction(t.id)}>🗑️</button>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function InvestmentsScreen({ data, setData, formatCurrency, openModal, showToast }) {
+            const total = data.investments.reduce((sum, i) => sum + i.amount, 0);
+            const totalReturns = data.investments.reduce((sum, i) => sum + (i.returns || 0), 0);
+            const percent = total > 0 ? ((totalReturns / total) * 100).toFixed(1) : 0;
+
+            const addReturn = (invId, returnValue) => {
+                setData(prev => ({
+                    ...prev,
+                    investments: prev.investments.map(inv =>
+                        inv.id === invId ? { ...inv, returns: (inv.returns || 0) + returnValue } : inv
+                    )
+                }));
+                showToast('Rendimento adicionado');
+            };
+
+            return (
+                <>
+                    <div className="card" style={{ gridColumn: '1 / -1' }}>
+                        <div className="section-title">Investimentos</div>
+                        <div style={{ fontSize: '32px', fontWeight: '800', marginBottom: '8px', letterSpacing: '-1px' }}>
+                            {formatCurrency(total)}
+                        </div>
+                        {total > 0 && (
+                            <div style={{ fontSize: '15px', color: 'var(--accent)', fontWeight: '700' }}>
+                                +{formatCurrency(totalReturns)} ({percent > 0 ? '+' : ''}{percent}%)
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="card">
+                        <div className="section-title">
+                            Portfólio
+                            <div className="section-action" onClick={() => openModal('investment')}>+ Adicionar</div>
+                        </div>
+                        {data.investments.length === 0 ? (
+                            <div className="empty-state">
+                                <div className="empty-icon">📊</div>
+                                <div className="empty-text">Nenhum investimento</div>
+                                <div className="empty-subtext">Comece a investir seu dinheiro</div>
+                            </div>
+                        ) : (
+                            data.investments.map(inv => {
+                                const p = inv.amount > 0 ? (((inv.returns || 0) / inv.amount) * 100).toFixed(1) : 0;
+                                return (
+                                    <div key={inv.id} className="investment-item">
+                                        <div className="item-icon" style={{ background: `${inv.color}15`, color: inv.color }}>
+                                            📊
+                                        </div>
+                                        <div className="item-info">
+                                            <div className="item-name">{inv.name}</div>
+                                            <div className="item-change" style={{ color: 'var(--accent)' }}>
+                                                +{formatCurrency(inv.returns || 0)}
+                                            </div>
+                                        </div>
+                                        <div style={{ textAlign: 'right' }}>
+                                            <div className="item-value">{formatCurrency(inv.amount)}</div>
+                                            <div className="item-change" style={{ color: 'var(--text-secondary)' }}>
+                                                {p > 0 ? '+' : ''}{p}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </>
+            );
+        }
+
+        function GoalsScreen({ data, setData, formatCurrency, openModal, deleteGoal, showToast }) {
+            const handleImageUpload = (goalId, imageData) => {
+                setData(prev => ({
+                    ...prev,
+                    goals: prev.goals.map(g => 
+                        g.id === goalId ? { ...g, image: imageData } : g
+                    )
+                }));
+            };
+
+            const addContribution = (goalId) => {
+                const amount = prompt('Quanto você quer adicionar?');
+                if (amount && !isNaN(amount)) {
+                    setData(prev => ({
+                        ...prev,
+                        goals: prev.goals.map(g =>
+                            g.id === goalId ? { ...g, current: g.current + parseFloat(amount) } : g
+                        )
+                    }));
+                    showToast('Contribuição adicionada');
+                }
+            };
+
+            return (
+                <>
+                    {data.goals.length === 0 ? (
+                        <div className="card" style={{ gridColumn: '1 / -1' }}>
+                            <div className="empty-state">
+                                <div className="empty-icon">🎯</div>
+                                <div className="empty-text">Nenhuma meta cadastrada</div>
+                                <div className="empty-subtext">Defina seus objetivos financeiros</div>
+                            </div>
+                        </div>
+                    ) : (
+                        data.goals.map(goal => {
+                            const percent = ((goal.current / goal.target) * 100).toFixed(0);
+                            return (
+                                <div key={goal.id} className="goal-card">
+                                    {goal.image ? (
+                                        <div style={{ position: 'relative' }}>
+                                            <img 
+                                                src={goal.image} 
+                                                alt={goal.name} 
+                                                className="goal-image"
+                                                onClick={() => document.getElementById(`file-${goal.id}`)?.click()}
+                                            />
+                                            <button 
+                                                className="remove-image"
+                                                onClick={() => handleImageUpload(goal.id, null)}
+                                            >
+                                                ×
+                                            </button>
+                                        </div>
+                                    ) : (
+                                        <>
+                                            <div 
+                                                className="image-upload"
+                                                style={{ height: '160px' }}
+                                                onClick={() => document.getElementById(`file-${goal.id}`)?.click()}
+                                            >
+                                                <div className="upload-icon">📸</div>
+                                                <div className="upload-text">Adicionar foto</div>
+                                            </div>
+                                            <input
+                                                id={`file-${goal.id}`}
+                                                type="file"
+                                                accept="image/*"
+                                                className="file-input"
+                                                onChange={(e) => {
+                                                    const file = e.target.files[0];
+                                                    if (file) {
+                                                        const reader = new FileReader();
+                                                        reader.onloadend = () => handleImageUpload(goal.id, reader.result);
+                                                        reader.readAsDataURL(file);
+                                                    }
+                                                }}
+                                            />
+                                        </>
+                                    )}
+                                    <div className="goal-content">
+                                        <div className="goal-header">
+                                            <div>
+                                                <div className="goal-name">{goal.name}</div>
+                                                <div className="goal-target">Meta: {formatCurrency(goal.target)}</div>
+                                            </div>
+                                            <div className="goal-percentage">{percent}%</div>
+                                        </div>
+                                        <div className="goal-progress">
+                                            <div className="goal-progress-fill" style={{ width: `${Math.min(100, percent)}%` }}></div>
+                                        </div>
+                                        <div className="goal-amount">{formatCurrency(goal.current)}</div>
+                                        <div className="goal-actions">
+                                            <button className="goal-btn" onClick={() => addContribution(goal.id)}>💰 Adicionar</button>
+                                            <button className="goal-btn" onClick={() => openModal('goal', goal)}>✏️ Editar</button>
+                                            <button className="goal-btn" onClick={() => deleteGoal(goal.id)}>🗑️</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })
+                    )}
+
+                    <button className="btn" onClick={() => openModal('goal')} style={{ gridColumn: '1 / -1' }}>
+                        + Criar Nova Meta
+                    </button>
+                </>
+            );
+        }
+
+        function ProfileScreen({ data, setData, showToast }) {
+            const fileRef = useRef(null);
+
+            const handleAvatarChange = (e) => {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onloadend = () => {
+                        setData(prev => ({
+                            ...prev,
+                            user: { ...prev.user, avatar: reader.result }
+                        }));
+                        showToast('Foto atualizada');
+                    };
+                    reader.readAsDataURL(file);
+                }
+            };
+
+            const exportData = () => {
+                const dataStr = JSON.stringify(data, null, 2);
+                const blob = new Blob([dataStr], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `capitalview-backup-${new Date().toISOString().split('T')[0]}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                showToast('Dados exportados com sucesso');
+            };
+
+            const importData = () => {
+                const input = document.createElement('input');
+                input.type = 'file';
+                input.accept = '.json';
+                input.onchange = (e) => {
+                    const file = e.target.files[0];
+                    if (file) {
+                        const reader = new FileReader();
+                        reader.onload = (e) => {
+                            try {
+                                const imported = JSON.parse(e.target.result);
+                                setData(imported);
+                                showToast('Dados importados');
+                            } catch (err) {
+                                alert('Erro ao importar dados');
+                            }
+                        };
+                        reader.readAsText(file);
+                    }
+                };
+                input.click();
+            };
+
+            const resetData = () => {
+                if (confirm('Deseja realmente resetar todos os dados? Esta ação não pode ser desfeita.')) {
+                    setData(defaultData);
+                    showToast('Dados resetados');
+                }
+            };
+
+            return (
+                <>
+                    <div style={{ gridColumn: '1 / -1' }}>
+                        <div className="profile-header">
+                            <div className="profile-avatar" onClick={() => fileRef.current?.click()}>
+                                {data.user.avatar ? (
+                                    <img src={data.user.avatar} alt={data.user.name} />
+                                ) : (
+                                    data.user.name.charAt(0).toUpperCase()
+                                )}
+                                <div className="avatar-edit">📷</div>
+                            </div>
+                            <input
+                                ref={fileRef}
+                                type="file"
+                                accept="image/*"
+                                onChange={handleAvatarChange}
+                                className="file-input"
+                            />
+                            <div className="profile-name">{data.user.name}</div>
+                            <div className="profile-email">{data.user.email}</div>
+                        </div>
+
+                        <div className="card">
+                            <div className="section-title">Dados</div>
+                            <div className="menu-item" onClick={exportData}>
+                                <div className="menu-left">
+                                    <div className="menu-icon">💾</div>
+                                    <div className="menu-text">Exportar Dados</div>
+                                </div>
+                                <div className="menu-arrow">›</div>
+                            </div>
+                            <div className="menu-item" onClick={importData}>
+                                <div className="menu-left">
+                                    <div className="menu-icon">📥</div>
+                                    <div className="menu-text">Importar Dados</div>
+                                </div>
+                                <div className="menu-arrow">›</div>
+                            </div>
+                        </div>
+
+                        <div className="card">
+                            <div className="section-title">Estatísticas</div>
+                            <div className="stat-box">
+                                <div className="stat-label">Transações</div>
+                                <div className="stat-value">{data.transactions.length}</div>
+                            </div>
+                            <div className="stat-box" style={{ marginTop: '12px' }}>
+                                <div className="stat-label">Investimentos</div>
+                                <div className="stat-value">{data.investments.length}</div>
+                            </div>
+                            <div className="stat-box" style={{ marginTop: '12px' }}>
+                                <div className="stat-label">Metas</div>
+                                <div className="stat-value">{data.goals.length}</div>
+                            </div>
+                        </div>
+
+                        <button className="btn btn-danger" onClick={resetData}>
+                            Resetar Todos os Dados
+                        </button>
+                    </div>
+                </>
+            );
+        }
+
+        function Modal({ type, closeModal, data, setData, editItem, formatCurrency, showToast }) {
+            const [form, setForm] = useState(() => {
+                // Função auxiliar para formatar número em texto formatado
+                const formatNumber = (num) => {
+                    if (!num) return '';
+                    return new Intl.NumberFormat('pt-BR', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    }).format(num);
+                };
+
+                if (editItem) {
+                    if (type === 'expense') {
+                        return {
+                            amount: formatNumber(editItem.amount),
+                            categoryId: editItem.categoryId.toString(),
+                            description: editItem.description,
+                            date: editItem.date,
+                            type: editItem.type
+                        };
+                    } else if (type === 'goal') {
+                        return {
+                            goalName: editItem.name,
+                            goalTarget: formatNumber(editItem.target),
+                            goalCurrent: formatNumber(editItem.current),
+                            goalImage: editItem.image
+                        };
+                    }
+                }
+                return {
+                    amount: '',
+                    categoryId: '',
+                    description: '',
+                    date: new Date().toISOString().split('T')[0],
+                    type: 'expense',
+                    goalName: '',
+                    goalTarget: '',
+                    goalCurrent: '',
+                    goalImage: null,
+                    investmentName: '',
+                    investmentAmount: '',
+                    investmentColor: '#4ECDC4',
+                    incomeName: '',
+                    incomeAmount: '',
+                    incomeFrequency: 'monthly',
+                    userName: data.user.name,
+                    userEmail: data.user.email
+                };
+            });
+
+            // Função para formatar valor enquanto digita
+            const formatMoneyInput = (value) => {
+                // Remove tudo exceto números
+                const numbers = value.replace(/\D/g, '');
+                
+                // Converte para número e divide por 100 (centavos)
+                const amount = parseFloat(numbers) / 100;
+                
+                // Formata com vírgula e ponto
+                if (isNaN(amount) || amount === 0) return '';
+                
+                return new Intl.NumberFormat('pt-BR', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }).format(amount);
+            };
+
+            // Função para converter valor formatado de volta para número
+            const parseMoneyInput = (value) => {
+                if (!value) return 0;
+                const numbers = value.replace(/\D/g, '');
+                return parseFloat(numbers) / 100;
+            };
+
+            const handleMoneyChange = (fieldName, value) => {
+                const formatted = formatMoneyInput(value);
+                setForm({...form, [fieldName]: formatted});
+            };
+
+            const handleSubmit = (e) => {
+                e.preventDefault();
+                
+                if (type === 'expense') {
+                    const amount = parseMoneyInput(form.amount);
+                    if (editItem) {
+                        setData(prev => ({
+                            ...prev,
+                            transactions: prev.transactions.map(t =>
+                                t.id === editItem.id ? {
+                                    ...t,
+                                    amount: amount,
+                                    categoryId: parseInt(form.categoryId),
+                                    description: form.description,
+                                    date: form.date
+                                } : t
+                            )
+                        }));
+                        showToast('Transação atualizada');
+                    } else {
+                        setData(prev => ({
+                            ...prev,
+                            transactions: [...prev.transactions, {
+                                id: Date.now(),
+                                amount: amount,
+                                categoryId: parseInt(form.categoryId),
+                                description: form.description,
+                                date: form.date,
+                                type: form.type
+                            }]
+                        }));
+                        showToast('Transação adicionada');
+                    }
+                } else if (type === 'goal') {
+                    const target = parseMoneyInput(form.goalTarget);
+                    const current = parseMoneyInput(form.goalCurrent);
+                    if (editItem) {
+                        setData(prev => ({
+                            ...prev,
+                            goals: prev.goals.map(g =>
+                                g.id === editItem.id ? {
+                                    ...g,
+                                    name: form.goalName,
+                                    target: target,
+                                    current: current
+                                } : g
+                            )
+                        }));
+                        showToast('Meta atualizada');
+                    } else {
+                        setData(prev => ({
+                            ...prev,
+                            goals: [...prev.goals, {
+                                id: Date.now(),
+                                name: form.goalName,
+                                current: current,
+                                target: target,
+                                image: form.goalImage
+                            }]
+                        }));
+                        showToast('Meta criada');
+                    }
+                } else if (type === 'investment') {
+                    const amount = parseMoneyInput(form.investmentAmount);
+                    setData(prev => ({
+                        ...prev,
+                        investments: [...prev.investments, {
+                            id: Date.now(),
+                            name: form.investmentName,
+                            amount: amount,
+                            returns: 0,
+                            color: form.investmentColor
+                        }]
+                    }));
+                    showToast('Investimento adicionado');
+                } else if (type === 'income') {
+                    const amount = parseMoneyInput(form.incomeAmount);
+                    setData(prev => ({
+                        ...prev,
+                        incomes: [...prev.incomes, {
+                            id: Date.now(),
+                            name: form.incomeName,
+                            amount: amount,
+                            frequency: form.incomeFrequency
+                        }]
+                    }));
+                    showToast('Receita adicionada');
+                } else if (type === 'settings') {
+                    setData(prev => ({
+                        ...prev,
+                        user: {
+                            ...prev.user,
+                            name: form.userName,
+                            email: form.userEmail
+                        }
+                    }));
+                    showToast('Perfil atualizado');
+                }
+                
+                closeModal();
+            };
+
+            return (
+                <div className="modal-overlay" onClick={closeModal}>
+                    <div className="modal" onClick={(e) => e.stopPropagation()}>
+                        <div className="modal-header">
+                            <div className="modal-title">
+                                {type === 'expense' && (editItem ? 'Editar Transação' : 'Nova Transação')}
+                                {type === 'goal' && (editItem ? 'Editar Meta' : 'Nova Meta')}
+                                {type === 'investment' && 'Novo Investimento'}
+                                {type === 'income' && 'Nova Receita'}
+                                {type === 'settings' && 'Configurações'}
+                            </div>
+                            <button className="close-btn" onClick={closeModal}>×</button>
+                        </div>
+
+                        <form onSubmit={handleSubmit}>
+                            {type === 'expense' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Tipo</label>
+                                        <select
+                                            className="form-select"
+                                            value={form.type}
+                                            onChange={(e) => setForm({...form, type: e.target.value})}
+                                            required
+                                        >
+                                            <option value="expense">Despesa</option>
+                                            <option value="income">Receita</option>
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Valor</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="0,00"
+                                            value={form.amount}
+                                            onChange={(e) => handleMoneyChange('amount', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Categoria</label>
+                                        <select
+                                            className="form-select"
+                                            value={form.categoryId}
+                                            onChange={(e) => setForm({...form, categoryId: e.target.value})}
+                                            required
+                                        >
+                                            <option value="">Selecione</option>
+                                            {data.categories.map(c => (
+                                                <option key={c.id} value={c.id}>{c.icon} {c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Descrição</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Ex: Supermercado"
+                                            value={form.description}
+                                            onChange={(e) => setForm({...form, description: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Data</label>
+                                        <input
+                                            type="date"
+                                            className="form-input"
+                                            value={form.date}
+                                            onChange={(e) => setForm({...form, date: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {type === 'goal' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Nome da Meta</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Ex: Viagem"
+                                            value={form.goalName}
+                                            onChange={(e) => setForm({...form, goalName: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Valor Objetivo</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="0,00"
+                                            value={form.goalTarget}
+                                            onChange={(e) => handleMoneyChange('goalTarget', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    {editItem && (
+                                        <div className="form-group">
+                                            <label className="form-label">Valor Atual</label>
+                                            <input
+                                                type="text"
+                                                className="form-input"
+                                                placeholder="0,00"
+                                                value={form.goalCurrent}
+                                                onChange={(e) => handleMoneyChange('goalCurrent', e.target.value)}
+                                                required
+                                            />
+                                        </div>
+                                    )}
+                                    <div className="form-group">
+                                        <label className="form-label">Imagem (Opcional)</label>
+                                        <div 
+                                            className={`image-upload ${form.goalImage ? 'has-image' : ''}`}
+                                            onClick={() => !form.goalImage && document.getElementById('goal-image')?.click()}
+                                        >
+                                            {form.goalImage ? (
+                                                <>
+                                                    <img src={form.goalImage} className="preview-image" alt="Preview" />
+                                                    <button 
+                                                        type="button"
+                                                        className="remove-image"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            setForm({...form, goalImage: null});
+                                                        }}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <div className="upload-icon">📸</div>
+                                                    <div className="upload-text">Clique para adicionar</div>
+                                                </>
+                                            )}
+                                        </div>
+                                        <input
+                                            id="goal-image"
+                                            type="file"
+                                            accept="image/*"
+                                            className="file-input"
+                                            onChange={(e) => {
+                                                const file = e.target.files[0];
+                                                if (file) {
+                                                    const reader = new FileReader();
+                                                    reader.onloadend = () => setForm({...form, goalImage: reader.result});
+                                                    reader.readAsDataURL(file);
+                                                }
+                                            }}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {type === 'investment' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Nome do Investimento</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Ex: Tesouro Direto"
+                                            value={form.investmentName}
+                                            onChange={(e) => setForm({...form, investmentName: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Valor Investido</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="0,00"
+                                            value={form.investmentAmount}
+                                            onChange={(e) => handleMoneyChange('investmentAmount', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Cor</label>
+                                        <input
+                                            type="color"
+                                            className="form-input"
+                                            value={form.investmentColor}
+                                            onChange={(e) => setForm({...form, investmentColor: e.target.value})}
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            {type === 'income' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Nome da Receita</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="Ex: Salário"
+                                            value={form.incomeName}
+                                            onChange={(e) => setForm({...form, incomeName: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Valor</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            placeholder="0,00"
+                                            value={form.incomeAmount}
+                                            onChange={(e) => handleMoneyChange('incomeAmount', e.target.value)}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">Frequência</label>
+                                        <select
+                                            className="form-select"
+                                            value={form.incomeFrequency}
+                                            onChange={(e) => setForm({...form, incomeFrequency: e.target.value})}
+                                        >
+                                            <option value="monthly">Mensal</option>
+                                            <option value="yearly">Anual</option>
+                                            <option value="once">Única</option>
+                                        </select>
+                                    </div>
+                                </>
+                            )}
+
+                            {type === 'settings' && (
+                                <>
+                                    <div className="form-group">
+                                        <label className="form-label">Nome</label>
+                                        <input
+                                            type="text"
+                                            className="form-input"
+                                            value={form.userName}
+                                            onChange={(e) => setForm({...form, userName: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                    <div className="form-group">
+                                        <label className="form-label">E-mail</label>
+                                        <input
+                                            type="email"
+                                            className="form-input"
+                                            value={form.userEmail}
+                                            onChange={(e) => setForm({...form, userEmail: e.target.value})}
+                                            required
+                                        />
+                                    </div>
+                                </>
+                            )}
+
+                            <button type="submit" className="btn">
+                                {editItem ? 'Salvar' : 'Adicionar'}
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            );
+        }
+
+        ReactDOM.render(<App />, document.getElementById('root'));
+    </script>
+</body>
+</html>
