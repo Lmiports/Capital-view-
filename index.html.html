@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>CapitalView | V15 Final</title>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.5/babel.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <style>
+        /* === CAPITAL VIEW V15 SYSTEM === */
+        :root {
+            --bg: #050505;
+            --card: #121214;
+            --primary: #00bcd4; /* Cyan Neon */
+            --brand: #006064;   /* Azul Petróleo */
+            --danger: #ff4444;
+            --success: #00e676;
+            --text: #ffffff;
+            --text-dim: #a1a1aa;
+            --border: #27272a;
+            --radius: 20px;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Inter', sans-serif; -webkit-tap-highlight-color: transparent; outline: none; }
+        body { background-color: var(--bg); color: var(--text); padding-bottom: 100px; overflow-x: hidden; }
+
+        /* Containers */
+        .container { max-width: 480px; margin: 0 auto; padding: 20px; min-height: 100vh; }
+        
+        /* Header */
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; padding-top: 10px; }
+        .cv-logo { width: 32px; height: 32px; }
+        .brand-name { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; color: #fff; margin-left: 10px; }
+        .brand-name span { color: var(--primary); }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; background: #222; border: 1px solid var(--border); overflow: hidden; }
+        .avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Cards */
+        .card { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; position: relative; overflow: hidden; }
+        
+        /* Gauges */
+        .gauge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+        .gauge-item { background: linear-gradient(145deg, #1a1a1d, #121214); border: 1px solid var(--border); border-radius: 16px; padding: 12px; display: flex; flex-direction: column; align-items: center; position: relative; }
+        .circle-svg { width: 64px; height: 64px; transform: rotate(-90deg); }
+        .circle-bg { fill: none; stroke: rgba(255,255,255,0.05); stroke-width: 5; }
+        .circle-fill { fill: none; stroke-width: 5; stroke-linecap: round; transition: stroke-dasharray 1s ease; }
+        .gauge-val { position: absolute; top: 35%; font-size: 11px; font-weight: 700; color: #fff; }
+        .gauge-label { font-size: 10px; color: var(--text-dim); margin-top: 6px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .gauge-money { font-size: 12px; font-weight: 600; margin-top: 2px; color: var(--primary); }
+
+        /* Extrato */
+        .history-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 4px; }
+        .h-tab { padding: 6px 14px; border-radius: 20px; font-size: 11px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); color: var(--text-dim); transition: 0.2s; white-space: nowrap; }
+        .h-tab.active { background: var(--brand); color: #fff; border-color: var(--primary); }
+
+        .tx-item { display: flex; align-items: center; padding: 14px 0; border-bottom: 1px solid var(--border); }
+        .tx-icon { width: 36px; height: 36px; border-radius: 10px; background: rgba(255,255,255,0.03); display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px; }
+        .tx-info { flex: 1; }
+        .tx-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; }
+        .tx-sub { font-size: 10px; color: var(--text-dim); text-transform: uppercase; }
+        .tx-amount { font-weight: 700; font-size: 14px; }
+
+        /* NAV BAR (Menu Inferior) */
+        .nav-bar { 
+            position: fixed; bottom: 20px; left: 20px; right: 20px; max-width: 440px; margin: 0 auto;
+            background: rgba(15, 15, 18, 0.95); backdrop-filter: blur(20px);
+            border: 1px solid var(--border); border-radius: 24px; height: 70px;
+            display: flex; justify-content: space-between; align-items: center; padding: 0 10px; z-index: 100;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        .nav-btn { background: none; border: none; color: #555; display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 9px; font-weight: 600; width: 60px; cursor: pointer; }
+        .nav-btn.active { color: var(--primary); transform: translateY(-2px); }
+        .nav-icon-svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+        
+        .fab {
+            width: 50px; height: 50px; background: linear-gradient(135deg, var(--brand), var(--primary)); border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            margin-top: -25px; border: 4px solid var(--bg);
+            box-shadow: 0 8px 20px rgba(0, 188, 212, 0.3); color: #fff; cursor: pointer;
+        }
+
+        /* UPLOAD & INPUTS */
+        .goal-img-area { height: 120px; background-color: #222; background-size: cover; background-position: center; border-radius: 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+        .goal-upload-trigger { position: absolute; bottom: 8px; right: 8px; background: rgba(0,0,0,0.7); padding: 6px; border-radius: 6px; cursor: pointer; }
+
+        .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 200; display: flex; align-items: flex-end; }
+        .modal-content { background: #18181b; width: 100%; border-radius: 24px 24px 0 0; padding: 24px; animation: slideUp 0.3s; border-top: 1px solid var(--border); }
+        @keyframes slideUp { from {transform: translateY(100%)} to {transform: translateY(0)}}
+
+        .input-box { width: 100%; padding: 16px; background: #000; border: 1px solid var(--border); border-radius: 12px; color: #fff; font-size: 16px; margin-bottom: 12px; }
+        .input-box:focus { border-color: var(--primary); }
+        .btn-full { width: 100%; padding: 16px; background: var(--primary); color: #000; font-weight: 700; border: none; border-radius: 12px; font-size: 16px; margin-top: 10px; cursor: pointer; }
+        
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tab { padding: 8px 16px; background: rgba(255,255,255,0.05); border-radius: 10px; font-size: 12px; white-space: nowrap; cursor: pointer; }
+        .tab.active { background: var(--primary); color: #000; font-weight: 700; }
+
+        .zeno-footer { text-align: center; margin-top: 60px; padding-bottom: 20px; font-size: 10px; color: #333; text-transform: uppercase; letter-spacing: 2px; font-weight: 700; }
+        .reset-link { color: #222; font-size: 10px; text-decoration: none; cursor: pointer; display: block; margin-bottom: 10px; transition: 0.2s; }
+        .reset-link:hover { color: var(--danger); text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useMemo } = React;
+
+        const DB_KEY = 'cv_v15_final';
+        const initialData = { user: { name: 'Usuário', photo: null }, transactions: [], investments: [], goals: [] };
+
+        // --- Utils ---
+        const formatMoney = (v) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 }).format(v);
+        const compressImg = (file) => {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    const img = new Image(); img.src = e.target.result;
+                    img.onload = () => {
+                        const c = document.createElement('canvas'); const r = 300/img.width;
+                        c.width = 300; c.height = img.height * r;
+                        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+                        resolve(c.toDataURL('image/jpeg', 0.6));
+                    };
+                };
+                reader.readAsDataURL(file);
+            });
+        };
+
+        // --- Icons ---
+        const Icons = {
+            Home: () => <svg className="nav-icon-svg" viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>,
+            Invest: () => <svg className="nav-icon-svg" viewBox="0 0 24 24"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>,
+            Target: () => <svg className="nav-icon-svg" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="6"></circle><circle cx="12" cy="12" r="2"></circle></svg>,
+            User: () => <svg className="nav-icon-svg" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>,
+            Plus: () => <svg className="nav-icon-svg" style={{width:'28px', height:'28px', strokeWidth:3}} viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>,
+            ArrowUp: () => <svg className="nav-icon-svg" style={{width:'16px',height:'16px'}} viewBox="0 0 24 24"><line x1="12" y1="19" x2="12" y2="5"></line><polyline points="5 12 12 5 19 12"></polyline></svg>,
+            ArrowDown: () => <svg className="nav-icon-svg" style={{width:'16px',height:'16px'}} viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>,
+            Camera: () => <svg className="nav-icon-svg" style={{width:'16px',height:'16px'}} viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>,
+            LogoCV: () => (
+                <svg className="cv-logo" viewBox="0 0 100 100">
+                    <defs><linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%"><stop offset="0%" style={{stopColor:'#006064', stopOpacity:1}} /><stop offset="100%" style={{stopColor:'#00bcd4', stopOpacity:1}} /></linearGradient></defs>
+                    <rect x="10" y="10" width="80" height="80" rx="20" fill="url(#grad1)" />
+                    <path d="M35 35 L35 65 L65 65" fill="none" stroke="white" strokeWidth="8" strokeLinecap="round" />
+                    <path d="M45 55 L75 25" fill="none" stroke="#00e676" strokeWidth="6" strokeLinecap="round" />
+                    <polygon points="75 25 65 25 75 35" fill="#00e676" />
+                </svg>
+            )
+        };
+
+        // --- SUB-COMPONENTS ---
+        const GaugeCard = ({ pct, val, label, color }) => {
+            const r = 30; const c = 2 * Math.PI * r; const offset = c - (pct / 100) * c;
+            return (
+                <div className="gauge-item">
+                    <svg className="circle-svg" viewBox="0 0 70 70"><circle className="circle-bg" cx="35" cy="35" r={r} /><circle className="circle-fill" cx="35" cy="35" r={r} stroke={color} strokeDasharray={c} strokeDashoffset={offset} /></svg>
+                    <div className="gauge-val" style={{color: '#fff'}}>{Math.round(pct)}%</div>
+                    <div className="gauge-label">{label}</div>
+                    <div className="gauge-money" style={{color:color}}>{formatMoney(val)}</div>
+                </div>
+            );
+        };
+
+        const TransactionList = ({ transactions }) => {
+            const [filter, setFilter] = useState('all');
+            const filtered = transactions.filter(t => {
+                if(filter === 'all') return true;
+                if(filter === 'in') return t.type === 'in';
+                if(filter === 'out') return t.type === 'out' && !t.subtype;
+                if(filter === 'invest') return t.subtype === 'invest' || t.subtype === 'goal';
+                return true;
+            });
+            return (
+                <div>
+                    <h3 style={{fontSize:'16px', marginBottom:'12px', marginTop:'24px'}}>Histórico</h3>
+                    <div className="history-tabs">
+                        <div className={`h-tab ${filter==='all'?'active':''}`} onClick={()=>setFilter('all')}>Tudo</div>
+                        <div className={`h-tab ${filter==='out'?'active':''}`} onClick={()=>setFilter('out')}>Gastos</div>
+                        <div className={`h-tab ${filter==='in'?'active':''}`} onClick={()=>setFilter('in')}>Entradas</div>
+                        <div className={`h-tab ${filter==='invest'?'active':''}`} onClick={()=>setFilter('invest')}>Ativos/Metas</div>
+                    </div>
+                    {filtered.length === 0 ? <p style={{color:'#666', fontSize:'13px', textAlign:'center', padding:'20px'}}>Nada aqui.</p> :
+                        filtered.map(t => (
+                            <div key={t.id} className="tx-item">
+                                <div className="tx-icon" style={{color: t.type==='in'?'var(--success)':'var(--text-dim)'}}>{t.type==='in' ? <Icons.ArrowDown/> : <Icons.ArrowUp/>}</div>
+                                <div className="tx-info"><div className="tx-title">{t.desc}</div><div className="tx-sub">{t.date} • {t.subtype || (t.type==='in'?'Entrada':'Saída')}</div></div>
+                                <div className="tx-amount" style={{color: t.type==='in'?'var(--success)':'#fff'}}>{t.type==='in'?'+':'-'} {formatMoney(t.val)}</div>
+                            </div>
+                        ))
+                    }
+                </div>
+            );
+        };
+
+        // --- TELAS ---
+        const HomeScreen = ({ data, stats }) => (
+            <div className="container">
+                <div className="header">
+                    <div style={{display:'flex', alignItems:'center'}}>
+                        <Icons.LogoCV />
+                        <div className="brand-name">Capital<span>View</span></div>
+                    </div>
+                    <div className="avatar">{data.user.photo ? <img src={data.user.photo} /> : <div style={{width:'100%', height:'100%', background:'#222'}}></div>}</div>
+                </div>
+                <div className="gauge-grid">
+                    <GaugeCard pct={100} val={stats.income} label="Receita" color="var(--success)" />
+                    <GaugeCard pct={Math.min(100, (stats.expense/stats.income)*100)||0} val={stats.expense} label="Despesas" color="var(--danger)" />
+                    <GaugeCard pct={Math.min(100, (stats.invested/stats.income)*100)||0} val={stats.invested} label="Ativos" color="var(--primary)" />
+                    <GaugeCard pct={Math.min(100, (stats.reserved/stats.income)*100)||0} val={stats.reserved} label="Metas" color="var(--brand)" />
+                </div>
+                <div className="card">
+                    <h3 style={{fontSize:'14px', marginBottom:'16px', color:'var(--primary)'}}>PATRIMÔNIO LÍQUIDO</h3>
+                    <div style={{fontSize:'36px', fontWeight:'800', color:'#fff'}}>{formatMoney((stats.income - stats.expense) + stats.invested + stats.reserved)}</div>
+                    <div style={{display:'flex', gap:'12px', marginTop:'12px'}}>
+                        <span style={{fontSize:'12px', background:'#222', padding:'4px 8px', borderRadius:'6px'}}>Livre: {formatMoney(stats.income - stats.expense)}</span>
+                    </div>
+                </div>
+                <TransactionList transactions={data.transactions} />
+            </div>
+        );
+
+        const InvestmentsScreen = ({ data }) => (
+            <div className="container">
+                <div className="header"><h2>Investimentos</h2></div>
+                <div className="card">
+                    <h3 style={{color:'var(--primary)', marginBottom:'10px'}}>Ativos Totais</h3>
+                    <div style={{fontSize:'32px', fontWeight:'800'}}>{formatMoney(data.investments.reduce((a,b)=>a+b.amount,0))}</div>
+                </div>
+                {data.investments.map(inv => (
+                    <div key={inv.id} className="tx-item">
+                        <div className="tx-icon" style={{color:'var(--primary)'}}>📈</div>
+                        <div className="tx-info"><div className="tx-title">{inv.name}</div><div className="tx-sub">{inv.type}</div></div>
+                        <div className="tx-amount">{formatMoney(inv.amount)}</div>
+                    </div>
+                ))}
+                {data.investments.length === 0 && <p style={{color:'#555', textAlign:'center'}}>Nenhum investimento ainda.</p>}
+            </div>
+        );
+
+        const GoalsScreen = ({ data, setData }) => {
+            const [isAdding, setIsAdding] = useState(false);
+            const [newGoal, setNewGoal] = useState({name:'', target:''});
+            const add = () => { if(!newGoal.name) return; setData(p => ({...p, goals: [...p.goals, {id: Date.now(), name: newGoal.name, target: parseFloat(newGoal.target), current: 0, img: null}]})); setIsAdding(false); }
+            const handleGoalImg = async (e, id) => { if(e.target.files[0]) { const str = await compressImg(e.target.files[0]); setData(p => ({...p, goals: p.goals.map(g => g.id === id ? {...g, img: str} : g)})); } };
+
+            return (
+                <div className="container">
+                    <div className="header"><h2>Metas</h2><button onClick={()=>setIsAdding(true)} style={{background:'var(--brand)', border:'none', borderRadius:'8px', padding:'8px 16px', color:'#fff', fontWeight:'700'}}>+ Nova</button></div>
+                    {isAdding && (<div className="card" style={{borderColor:'var(--primary)'}}><input className="input-box" placeholder="Nome do Sonho" onChange={e=>setNewGoal({...newGoal, name:e.target.value})} /><input className="input-box" type="number" placeholder="Valor (R$)" onChange={e=>setNewGoal({...newGoal, target:e.target.value})} /><button className="btn-full" onClick={add}>Salvar Meta</button></div>)}
+                    <div style={{display:'grid', gridTemplateColumns:'1fr 1fr', gap:'12px'}}>
+                        {data.goals.map(g => {
+                            const pct = Math.min(100, Math.round((g.current/g.target)*100));
+                            return (
+                                <div key={g.id} className="card" style={{padding:'12px', margin:0}}>
+                                    <div className="goal-img-area" style={{backgroundImage: g.img ? `url(${g.img})` : 'none'}}>{!g.img && <span style={{color:'#555', fontSize:'12px'}}>Sem Foto</span>}<label className="goal-upload-trigger"><Icons.Camera /><input type="file" hidden accept="image/*" onChange={(e) => handleGoalImg(e, g.id)} /></label></div>
+                                    <div style={{fontWeight:'700', fontSize:'14px', marginBottom:'8px'}}>{g.name}</div>
+                                    <div style={{height:'6px', background:'#222', borderRadius:'3px', overflow:'hidden', marginBottom:'8px'}}><div style={{height:'100%', width:`${pct}%`, background:'var(--primary)'}}></div></div>
+                                    <div style={{fontSize:'11px', color:'var(--text-dim)'}}>{formatMoney(g.current)} / {formatMoney(g.target)}</div>
+                                </div>
+                            )
+                        })}
+                    </div>
+                </div>
+            );
+        };
+
+        const ProfileScreen = ({ data, setData }) => {
+            const handlePhoto = async (e) => { if(e.target.files[0]) { const str = await compressImg(e.target.files[0]); setData(p => ({...p, user: {...p.user, photo: str}})); } };
+            return (
+                <div className="container" style={{textAlign:'center', paddingTop:'60px'}}>
+                    <div style={{width:'100px', height:'100px', borderRadius:'50%', background:'#222', border:'3px solid var(--primary)', margin:'0 auto 20px', position:'relative', overflow:'hidden'}}>{data.user.photo ? <img src={data.user.photo} style={{width:'100%', height:'100%', objectFit:'cover'}} /> : null}<input type="file" style={{position:'absolute', inset:0, opacity:0}} onChange={handlePhoto} /></div>
+                    <input value={data.user.name} onChange={(e) => setData(p => ({...p, user: {...p.user, name: e.target.value}}))} style={{textAlign:'center', fontSize:'22px', fontWeight:'700', border:'none', background:'transparent', color:'#fff', width:'100%', marginBottom:'40px'}} placeholder="Seu Nome" />
+                    <div className="zeno-footer">
+                        <span className="reset-link" onClick={()=>{if(confirm('Apagar tudo?')) localStorage.removeItem(DB_KEY)||location.reload()}}>Resetar Sistema</span>
+                        Powered by ZENO Sistemas
+                    </div>
+                </div>
+            );
+        };
+
+        // --- APP MAIN ---
+        function App() {
+            const [data, setData] = useState(() => { try { return JSON.parse(localStorage.getItem(DB_KEY)) || initialData; } catch { return initialData; } });
+            const [screen, setScreen] = useState('home');
+            const [modal, setModal] = useState(false);
+
+            useEffect(() => localStorage.setItem(DB_KEY, JSON.stringify(data)), [data]);
+
+            const stats = useMemo(() => {
+                const income = data.transactions.filter(t => t.type === 'in').reduce((a,b)=>a+b.val,0) || 1;
+                const expense = data.transactions.filter(t => t.type === 'out' && !t.subtype).reduce((a,b)=>a+b.val,0);
+                const invested = data.investments.reduce((a,b)=>a+b.amount,0);
+                const reserved = data.goals.reduce((a,b)=>a+b.current,0);
+                return { income, expense, invested, reserved };
+            }, [data]);
+
+            // Form
+            const MagicForm = () => {
+                const [tab, setTab] = useState('out');
+                const [val, setVal] = useState('');
+                const [desc, setDesc] = useState('');
+                const [goalId, setGoalId] = useState('');
+
+                const save = () => {
+                    const amount = parseFloat(val); if(!amount) return;
+                    let d = {...data}; const date = new Date().toLocaleDateString();
+                    if(tab === 'out') d.transactions.unshift({id:Date.now(), desc: desc||'Despesa', val: amount, type:'out', date});
+                    if(tab === 'in') d.transactions.unshift({id:Date.now(), desc: desc||'Entrada', val: amount, type:'in', date});
+                    if(tab === 'inv') { d.investments.push({id:Date.now(), name: desc||'Ativo', amount, type:'Ativo'}); d.transactions.unshift({id:Date.now(), desc: `Invest: ${desc}`, val: amount, type:'out', subtype:'invest', date}); }
+                    if(tab === 'goal') { d.goals = d.goals.map(g => g.id == goalId ? {...g, current: g.current + amount} : g); const gName = d.goals.find(g=>g.id==goalId)?.name || 'Meta'; d.transactions.unshift({id:Date.now(), desc: `Meta: ${gName}`, val: amount, type:'out', subtype:'goal', date}); }
+                    setData(d); setModal(false);
+                };
+
+                return (
+                    <div className="modal-overlay" onClick={(e)=>e.target.className.includes('overlay') && setModal(false)}>
+                        <div className="modal-content">
+                            <h3 style={{marginBottom:'20px'}}>Novo Lançamento</h3>
+                            <div className="tabs"><div className={`tab ${tab==='out'?'active':''}`} onClick={()=>setTab('out')}>Gasto</div><div className={`tab ${tab==='in'?'active':''}`} onClick={()=>setTab('in')}>Entrada</div><div className={`tab ${tab==='inv'?'active':''}`} onClick={()=>setTab('inv')}>Investir</div><div className={`tab ${tab==='goal'?'active':''}`} onClick={()=>setTab('goal')}>Meta</div></div>
+                            <input className="input-box" type="number" placeholder="Valor (R$)" autoFocus value={val} onChange={e=>setVal(e.target.value)} />
+                            {tab === 'goal' ? (<select className="input-box" onChange={e=>setGoalId(e.target.value)}><option>Selecione a Meta...</option>{data.goals.map(g => <option key={g.id} value={g.id}>{g.name}</option>)}</select>) : (<input className="input-box" placeholder={tab==='inv'?'Nome do Ativo':'Descrição'} value={desc} onChange={e=>setDesc(e.target.value)} />)}
+                            <button className="btn-full" onClick={save}>Confirmar</button>
+                        </div>
+                    </div>
+                );
+            };
+
+            return (
+                <div>
+                    {screen === 'home' && <HomeScreen data={data} stats={stats} />}
+                    {screen === 'invest' && <InvestmentsScreen data={data} />}
+                    {screen === 'goals' && <GoalsScreen data={data} setData={setData} />}
+                    {screen === 'profile' && <ProfileScreen data={data} setData={setData} />}
+
+                    <div className="nav-bar">
+                        <button className={`nav-btn ${screen==='home'?'active':''}`} onClick={()=>setScreen('home')}><Icons.Home/>Início</button>
+                        <button className={`nav-btn ${screen==='invest'?'active':''}`} onClick={()=>setScreen('invest')}><Icons.Invest/>Investir</button>
+                        <div className="fab" onClick={()=>setModal(true)}><Icons.Plus/></div>
+                        <button className={`nav-btn ${screen==='goals'?'active':''}`} onClick={()=>setScreen('goals')}><Icons.Target/>Metas</button>
+                        <button className={`nav-btn ${screen==='profile'?'active':''}`} onClick={()=>setScreen('profile')}><Icons.User/>Perfil</button>
+                    </div>
+                    {modal && <MagicForm />}
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
